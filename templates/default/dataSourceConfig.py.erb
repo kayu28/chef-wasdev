@@ -1,0 +1,125 @@
+import socket,sys,java
+
+def getProperty(key):
+	return java.lang.System.getProperty(key)
+
+node = AdminControl.getNode()
+server = AdminControl.queryNames('node='+ node +',type=Server,*')
+serverName = AdminControl.getAttribute(server, "name")
+
+authDataAlias  = "<%= node['was']['auth']['alias'] %>"
+dbUser         = "<%= node['was']['auth']['dbuser'] %>"
+dbPassword     = "<%= node['was']['auth']['dbpassword'] %>"
+jdbcDriverPath = "<%= @jdbc_driver_path%>"
+jdbcProvider   = "<%= node['was']['provider']['name'] %>"
+dataSource     = "<%= node['was']['datasource']['name'] %>"
+jndiName       = "<%= node['was']['datasource']['jndi'] %>"
+database       = "<%= node['was']['datasource']['database'] %>"
+hostName       = "<%= node['was']['datasource']['hostname'] %>"
+port           = "<%= node['was']['datasource']['port'] %>"
+schema         = "<%= node['was']['datasource']['schema'] %>"
+
+def setup():
+	createAuthData(node, authDataAlias, dbUser, dbPassword)
+	setVariable(node, serverName, "DB2UNIVERSAL_JDBC_DRIVER_PATH", jdbcDriverPath)
+	createJdbcProvider(node, serverName, jdbcProvider)
+	createDataSource(node, serverName, jdbcProvider, dataSource, jndiName, database, hostName, port, schema, authDataAlias)
+
+def reset():
+	deleteDataSource(node, serverName, jdbcProvider, dataSource)
+	deleteJdbcProvider(node, serverName, jdbcProvider)
+	deleteAuthData(node, authDataAlias)
+
+def createAuthData(node, alias, user, password):
+	id = getAuthData(node, alias)
+	if id is None:
+		attrs = ["-alias", alias,"-user", user,"-password", password]
+		id = AdminTask.createAuthDataEntry(attrs)
+		AdminConfig.save()
+	else:
+		print "JAAS - J2C 認証データ [ " + alias + " ] は作成済みです"
+	AdminConfig.show(id)
+
+def deleteAuthData(node, alias):
+	authData = getAuthData(node, alias)
+	if authData is None:
+		print "JAAS - J2C 認証データ [ " + alias + " ] は存在しません"
+	else:
+		AdminConfig.remove(authData)
+		AdminConfig.save()
+
+def getAuthData(node, alias):
+	authDataList = AdminConfig.list("JAASAuthData")
+	if len(authDataList) == 0:
+		return
+	for authData in authDataList.splitlines():
+		if AdminConfig.showAttribute(authData, 'alias') == (node + '/' + alias):
+			return authData
+
+def createJdbcProvider(node, server, jdbcProvider):
+	id = AdminConfig.getid('/Node:%s/Server:%s/JDBCProvider:%s/' %(node, server, jdbcProvider))
+	if (len(id) == 0):
+		classpath = ["${DB2UNIVERSAL_JDBC_DRIVER_PATH}/db2jcc.jar", "${UNIVERSAL_JDBC_DRIVER_PATH}/db2jcc_license_cu.jar"]
+		nativepath = ["${DB2UNIVERSAL_JDBC_DRIVER_NATIVEPATH}"]
+		attrs = ["-scope", "Node=" + node + ",Server=" + server]
+		attrs.extend(["-databaseType", "DB2", "-providerType", "DB2 Universal JDBC Driver Provider"])
+		attrs.extend(["-implementationType", "XA data source", "-implementationClassName", "com.ibm.db2.jcc.DB2XADataSource"])
+		attrs.extend(["-name", jdbcProvider, "-description",""])
+		attrs.extend(["-classpath", classpath, "-nativePath", nativepath])
+		id = AdminTask.createJDBCProvider(attrs)
+		AdminConfig.save()
+	else:
+		print "JDBCプロバイダ [ " + jdbcProvider + " ] は作成済みです"
+	AdminConfig.show(id)
+
+def deleteJdbcProvider(node, server, jdbcProvider):
+	# id = AdminConfig.getid("/Node:" + node + "/Server:" + server + "/JDBCProvider:" + jdbcProvider)
+	id = AdminConfig.getid('/Node:%s/Server:%s/JDBCProvider:%s/' %(node, server, jdbcProvider))
+	if (len(id) == 0):
+		print "JDBCプロバイダ [ " + jdbcProvider + " ] は存在しません"
+	else:
+		AdminConfig.remove(id)
+		AdminConfig.save()
+
+def createDataSource(node, server, jdbcProvider, datasource, jndi, database, hostname, port, schema, authData):
+	# id = AdminConfig.getid("/Node:" + node + "/Server:" + server + "/JDBCProvider:" + jdbcProvider + "/DataSource:" + datasource + "/")
+	id = AdminConfig.getid('/Node:%s/Server:%s/JDBCProvider:%s/DataSource:%s/' %(node, server, jdbcProvider, datasource))
+	if (len(id) == 0):
+		templateId = "DB2 Universal JDBC Driver DataSource(templates/system|jdbc-resource-provider-templates.xml#DataSource_DB2_UNI_1)"
+		props = [[["name", "databaseName"], ["type", "String"], ["value", database]]]
+		props.append([["name", "driverType"], ["type", "integer"], ["value", 4]])
+		props.append([["name", "serverName"], ["type", "String"], ["value", hostname]])
+		props.append([["name", "portNumber"], ["type", "integer"], ["value", port]])
+		props.append([["name", "currentSchema"], ["type", "String"], ["value", schema.upper()], ["required", "false"], ["supportsDynamicUpdates", "false"]])
+		attrs = [["jndiName", jndi], ["authDataAlias", node + "/" + authData], ["authMechanismPreference", "BASIC_PASSWORD"]]
+		attrs.append(["propertySet",[["resourceProperties", props]]])
+		id = AdminJDBC.createDataSourceUsingTemplate(node, server, jdbcProvider, templateId, datasource, attrs)
+		AdminConfig.save()
+	else:
+		print "データソース [ " + datasource + " ] は作成済みです"
+	AdminConfig.show(id)
+
+def deleteDataSource(node, server, jdbcProvider, datasource):
+	id = AdminConfig.getid("/Node:" + node + "/Server:" + server + "/JDBCProvider:" + jdbcProvider + "/DataSource:" + datasource)
+	if (len(id) == 0):
+		print "データソース [ " + datasource + " ] は存在しません"
+	else:
+		AdminConfig.remove(id)
+		AdminConfig.save()
+
+def setVariable(node, server, name, value):
+	id = getVariable(node, server, name)
+	if id is None:
+		attrs = ["-scope", "Node=" + node + ",Server=" + server]
+		attrs.extend(["-variableName", name, "-variableValue", value])
+		AdminTask.setVariable(attrs)
+	else:
+		AdminConfig.modify(id, [['value', value]])
+	AdminConfig.save()
+
+def getVariable(node, server, name):
+	AdminConfig.getid("/Node:" + node + "/Server:" + server)
+	ids = AdminConfig.list('VariableSubstitutionEntry',AdminConfig.getid("/Node:" + node + "/Server:" + server)).splitlines()
+	for id in ids:
+		if (AdminConfig.showAttribute(id, 'symbolicName') == name):
+			return id

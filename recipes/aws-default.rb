@@ -17,3 +17,4 @@
 include_recipe 'was::aws-install'
 include_recipe 'was::aws-create-profile'
 include_recipe 'was::aws-add-service'
+include_recipe 'was::aws-configure-datasource'
