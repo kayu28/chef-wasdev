@@ -25,7 +25,7 @@ def setup():
 	createJdbcProvider(node, serverName, jdbcProvider)
 	createDataSource(node, serverName, jdbcProvider, dataSource, jndiName, database, hostName, port, schema, authDataAlias)
 
-def reset():
+def teardown():
 	deleteDataSource(node, serverName, jdbcProvider, dataSource)
 	deleteJdbcProvider(node, serverName, jdbcProvider)
 	deleteAuthData(node, authDataAlias)
@@ -33,17 +33,17 @@ def reset():
 def createAuthData(node, alias, user, password):
 	id = getAuthData(node, alias)
 	if id is None:
-		attrs = ["-alias", alias,"-user", user,"-password", password]
+		attrs = ["-alias", alias, "-user", user, "-password", password]
 		id = AdminTask.createAuthDataEntry(attrs)
 		AdminConfig.save()
 	else:
-		print "JAAS - J2C 認証データ [ " + alias + " ] は作成済みです"
+		print "JAAS - J2C authentication data [ " + alias + " ] already exists."
 	AdminConfig.show(id)
 
 def deleteAuthData(node, alias):
 	authData = getAuthData(node, alias)
 	if authData is None:
-		print "JAAS - J2C 認証データ [ " + alias + " ] は存在しません"
+		print "JAAS - J2C authentication data [ " + alias + " ] not found."
 	else:
 		AdminConfig.remove(authData)
 		AdminConfig.save()
@@ -69,20 +69,18 @@ def createJdbcProvider(node, server, jdbcProvider):
 		id = AdminTask.createJDBCProvider(attrs)
 		AdminConfig.save()
 	else:
-		print "JDBCプロバイダ [ " + jdbcProvider + " ] は作成済みです"
+		print "JDBC Provider [ " + jdbcProvider + " ] already exists."
 	AdminConfig.show(id)
 
 def deleteJdbcProvider(node, server, jdbcProvider):
-	# id = AdminConfig.getid("/Node:" + node + "/Server:" + server + "/JDBCProvider:" + jdbcProvider)
 	id = AdminConfig.getid('/Node:%s/Server:%s/JDBCProvider:%s/' %(node, server, jdbcProvider))
 	if (len(id) == 0):
-		print "JDBCプロバイダ [ " + jdbcProvider + " ] は存在しません"
+		print "JDBC Provider [ " + jdbcProvider + " ] not found."
 	else:
 		AdminConfig.remove(id)
 		AdminConfig.save()
 
 def createDataSource(node, server, jdbcProvider, datasource, jndi, database, hostname, port, schema, authData):
-	# id = AdminConfig.getid("/Node:" + node + "/Server:" + server + "/JDBCProvider:" + jdbcProvider + "/DataSource:" + datasource + "/")
 	id = AdminConfig.getid('/Node:%s/Server:%s/JDBCProvider:%s/DataSource:%s/' %(node, server, jdbcProvider, datasource))
 	if (len(id) == 0):
 		templateId = "DB2 Universal JDBC Driver DataSource(templates/system|jdbc-resource-provider-templates.xml#DataSource_DB2_UNI_1)"
@@ -96,13 +94,13 @@ def createDataSource(node, server, jdbcProvider, datasource, jndi, database, hos
 		id = AdminJDBC.createDataSourceUsingTemplate(node, server, jdbcProvider, templateId, datasource, attrs)
 		AdminConfig.save()
 	else:
-		print "データソース [ " + datasource + " ] は作成済みです"
+		print "DataSource [ " + datasource + " ] already exists."
 	AdminConfig.show(id)
 
 def deleteDataSource(node, server, jdbcProvider, datasource):
-	id = AdminConfig.getid("/Node:" + node + "/Server:" + server + "/JDBCProvider:" + jdbcProvider + "/DataSource:" + datasource)
+	id = AdminConfig.getid('/Node:%s/Server:%s/JDBCProvider:%s/DataSource:%s/' %(node, server, jdbcProvider, datasource))
 	if (len(id) == 0):
-		print "データソース [ " + datasource + " ] は存在しません"
+		print "DataSource [ " + datasource + " ] not found."
 	else:
 		AdminConfig.remove(id)
 		AdminConfig.save()
@@ -118,7 +116,6 @@ def setVariable(node, server, name, value):
 	AdminConfig.save()
 
 def getVariable(node, server, name):
-	AdminConfig.getid("/Node:" + node + "/Server:" + server)
 	ids = AdminConfig.list('VariableSubstitutionEntry',AdminConfig.getid("/Node:" + node + "/Server:" + server)).splitlines()
 	for id in ids:
 		if (AdminConfig.showAttribute(id, 'symbolicName') == name):
