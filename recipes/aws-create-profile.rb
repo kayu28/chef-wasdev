@@ -34,6 +34,6 @@ if node['was']['profile']['hostName']
 end
 
 execute "create-profile" do
-  sensitive true
+  # sensitive true
   command "#{cmd}"
 end

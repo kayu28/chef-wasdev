@@ -51,7 +51,7 @@ end
 
 execute 'save-credential' do
   action :nothing
-  sensitive true
+  # sensitive true
   command <<-EOH
     unzip -qd #{work_dir}/im #{work_dir}/#{installer}
     #{work_dir}/im/tools/imutilsc saveCredential -secureStorageFile #{storage_file} -masterPasswordFile #{passwd_file} -userName #{ibmuser} -userPassword #{ibmpassword} -url #{url}

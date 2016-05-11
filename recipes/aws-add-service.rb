@@ -27,7 +27,7 @@ execute 'change-mode' do
 end
 
 execute "add-service" do
-  sensitive true
+  # sensitive true
   action :nothing
   command <<-EOH
     chown -R #{username} #{node['was']['was_home']}/profiles/#{profileName}
