@@ -32,14 +32,6 @@ execute "setup" do
   EOH
 end
 
-remote_file "#{wasHome}/lib/ext/db2jcc.jar" do
-  source node['was']['provider']['db2driver_url']
-  owner 'root'
-  group 'root'
-  mode '0755'
-  not_if "test -e #{wasHome}/lib/ext/db2jcc.jar"
-end
-
 template "#{script}" do
   owner 'root'
   group 'root'

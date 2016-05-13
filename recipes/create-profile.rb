@@ -20,6 +20,14 @@ admin   = node['was']['admin']
 username = admin['username']
 password = admin['password']
 
+remote_file "#{wasHome}/lib/ext/db2jcc.jar" do
+  source node['was']['provider']['db2driver_url']
+  owner 'root'
+  group 'root'
+  mode '0674'
+  not_if "test -e #{wasHome}/lib/ext/db2jcc.jar"
+end
+
 cmd = "#{wasHome}/bin/manageprofiles.sh -create -validatePorts true"
 cmd << " -templatePath #{wasHome}/profileTemplates/default"
 cmd << " -profileName #{profile['profileName']}"
