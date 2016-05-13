@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: was
-# Recipe:: aws-configure-datasource
+# Recipe:: configure-datasource
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ execute "setup" do
 end
 
 remote_file "#{wasHome}/lib/ext/db2jcc.jar" do
-  source node['was']['db2driver_url']
+  source node['was']['provider']['db2driver_url']
   owner 'root'
   group 'root'
   mode '0755'

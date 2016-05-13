@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: was
-# Recipe:: install
+# Recipe:: aws-install
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ unless node['was']['repository_url']
   Chef::Application.fatal!("The repository url attribute is required.")
 end
 
-account = Chef::EncryptedDataBagItem.load('credentials', 'account')
-ibmuser = account['ibmuser']
-ibmpassword = account['ibmpassword']
+ibmuser       = node['was']['ibmuser']
+ibmpassword   = node['was']['ibmpassword']
 
 unless ibmuser
   Chef::Application.fatal!("The IBM User ID attribute is required.")
@@ -62,7 +61,7 @@ end
 execute 'was-install' do
   action :nothing
   command <<-EOH
-    #{work_dir}/im/installc -acceptLicense -showVerboseProgress -input #{response_file} -secureStorageFile #{storage_file} -masterPasswordFile #{passwd_file} -log #{node['was']['installer_log']}
+    #{work_dir}/im/installc -acceptLicense -input #{response_file} -secureStorageFile #{storage_file} -masterPasswordFile #{passwd_file} -log #{node['was']['installer_log']}
   EOH
 end
 

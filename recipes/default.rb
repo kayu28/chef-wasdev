@@ -16,4 +16,4 @@
 
 include_recipe 'was::install'
 include_recipe 'was::create-profile'
-include_recipe 'was::add-service'
+include_recipe 'was::configure-datasource'
