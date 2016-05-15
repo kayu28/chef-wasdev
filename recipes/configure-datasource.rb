@@ -32,6 +32,14 @@ execute "setup" do
   EOH
 end
 
+execute "restart" do
+  action :nothing
+  command <<-EOH
+    #{wasHome}/profiles/#{p['profileName']}/bin/stopServer.sh #{p['serverName']} -username #{p['adminUserName']} -password #{p['adminPassword']}
+    #{wasHome}/profiles/#{p['profileName']}/bin/startServer.sh #{p['serverName']}
+  EOH
+end
+
 template "#{script}" do
   owner 'root'
   group 'root'
@@ -40,4 +48,5 @@ template "#{script}" do
     :jdbc_driver_path => "#{wasHome}/lib/ext"
   })
   notifies :run, "execute[setup]", :immediately
+  notifies :run, "execute[restart]", :immediately
 end
