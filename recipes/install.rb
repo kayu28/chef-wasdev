@@ -35,9 +35,9 @@ end
 installer     = node['was']['installer_file']
 url           = node['was']['repository_url']
 work_dir      = node['was']['working_dir']
+passwd_file   = node['was']['passwd_file']
+storage_file  = node['was']['storage_file']
 response_file = "#{work_dir}/install.xml"
-passwd_file   = "#{work_dir}/master_password.txt"
-storage_file  = "/var/credential.store"
 
 # ------------------------------------------------------
 # Install Websphere Application Server for Developers.
@@ -52,17 +52,17 @@ end
 execute 'save-credential' do
   action :nothing
   sensitive true
-  command <<-EOH
-    unzip -qd #{work_dir}/im #{work_dir}/#{installer}
-    #{work_dir}/im/tools/imutilsc saveCredential -secureStorageFile #{storage_file} -masterPasswordFile #{passwd_file} -userName #{ibmuser} -userPassword #{ibmpassword} -url #{url}
-  EOH
+  command "#{work_dir}/im/tools/imutilsc saveCredential -secureStorageFile #{storage_file} -masterPasswordFile #{passwd_file} -userName #{ibmuser} -userPassword #{ibmpassword} -url #{url}"
+end
+
+execute 'extract' do
+  action :nothing
+  command "unzip -qd #{work_dir}/im #{work_dir}/#{installer}"
 end
 
 execute 'was-install' do
   action :nothing
-  command <<-EOH
-    #{work_dir}/im/installc -acceptLicense -input #{response_file} -secureStorageFile #{storage_file} -masterPasswordFile #{passwd_file} -log #{node['was']['installer_log']}
-  EOH
+  command "#{work_dir}/im/installc -acceptLicense -input #{response_file} -secureStorageFile #{storage_file} -masterPasswordFile #{passwd_file} -log #{node['was']['installer_log']}"
 end
 
 template "#{response_file}" do
@@ -87,6 +87,7 @@ remote_file File.join(work_dir, installer) do
   group 'root'
   mode '0755'
   not_if "test -e #{work_dir}/#{installer}"
+  notifies :run, "execute[extract]", :immediately
   notifies :run, "execute[save-credential]", :immediately
   notifies :run, "execute[was-install]", :immediately
 end

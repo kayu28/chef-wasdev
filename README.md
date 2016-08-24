@@ -6,8 +6,9 @@ Requirements
 ------------
 
 #### platforms
-- `RedHat` - tested on Red Hat Enterprise Linux 7.2
-- `CentOS` - tested on CentOS 6.7
+- Red Hat Enterprise Linux 7
+- CentOS 6+
+- Ubuntu 14+
 
 Attributes
 ----------

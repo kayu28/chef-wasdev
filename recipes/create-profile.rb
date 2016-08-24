@@ -19,6 +19,7 @@ profile = node['was']['profile']
 admin   = node['was']['admin']
 username = admin['username']
 password = admin['password']
+service_name = 'default'
 
 remote_file "#{wasHome}/lib/ext/db2jcc.jar" do
   source node['was']['provider']['db2driver_url']
@@ -45,7 +46,7 @@ if profile['hostName']
   cmd << " -hostName #{profile['hostName']}"
 end
 
-execute "create-profile" do
+execute 'create-profile' do
   action :nothing
   sensitive true
   command "#{cmd}"
@@ -53,19 +54,21 @@ end
 
 execute 'change-mode' do
   action :nothing
-  command <<-EOH
-    chmod -R g+rwx #{wasHome}
-  EOH
+  command "chmod -R g+rwx #{wasHome}"
 end
 
-execute "add-service" do
+execute 'add-service' do
   sensitive true
   action :nothing
   command <<-EOH
     chown -R #{username} #{wasHome}/profiles/#{profile['profileName']}
-    #{wasHome}/bin/wasservice.sh -add default -serverName #{profile['serverName']} -profilePath #{wasHome}/profiles/#{profile['profileName']} -userid #{username} -password #{password}
-    #{wasHome}/bin/wasservice.sh -start default
+    #{wasHome}/bin/wasservice.sh -add #{service_name} -serverName #{profile['serverName']} -profilePath #{wasHome}/profiles/#{profile['profileName']} -userid #{username} -password #{password}
   EOH
+end
+
+execute 'start-service' do
+  action :nothing
+  command "#{wasHome}/bin/wasservice.sh -start #{service_name}"
 end
 
 user username do
@@ -77,4 +80,5 @@ user username do
   notifies :run, "execute[create-profile]", :immediately
   notifies :run, "execute[change-mode]", :immediately
   notifies :run, "execute[add-service]", :immediately
+  notifies :run, "execute[start-service]", :immediately
 end
