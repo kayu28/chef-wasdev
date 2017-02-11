@@ -1,41 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <agent-input clean='true' temporary='true'>
-
 <variables>
-  <variable name='sharedLocation' value='<%= node['was']['was_sharedLocation'] %>'/>
+  <variable name='sharedLocation' value='<%= node['wasdev']['sharedLocation'] %>'/>
 </variables>
-
 <server>
-    <repository location='<%= @installer_location %>'/>
-    <repository location='http://www.ibm.com/software/repositorymanager/V85WASDeveloperILAN'/>
+  <repository location='<%= node['wasdev']['was']['repository'] %>'/>
 </server>
-
-<install>
-  <offering id='com.ibm.cic.agent' profile='IBM Installation Manager' features='agent_core,agent_jre' version='<%= node['was']['installer_version'] %>'/>
-  <offering id='com.ibm.websphere.DEVELOPERSILAN.v85' profile='IBM WebSphere Application Server V8.5' features='core.feature,com.ibm.sdk.6_64bit,ejbdeploy,samples,thinclient,embeddablecontainer' installFixes='none' />
+<install modify='false'>
+  <offering id='com.ibm.websphere.ILAN.v90' profile='IBM WebSphere Application Server V9.0' features='core.feature,ejbdeploy,thinclient,embeddablecontainer' installFixes='recommended'/>
+  <offering id='com.ibm.java.jdk.v8' profile='IBM WebSphere Application Server V9.0' features='com.ibm.sdk.8'/>
 </install>
-
-<profile id='IBM Installation Manager' installLocation='/opt/IBM/InstallationManager/eclipse' kind='self'>
-  <data key='eclipseLocation' value='/opt/IBM/InstallationManager/eclipse'/>
+<profile id='IBM WebSphere Application Server V9.0' installLocation='<%= node['wasdev']['was']['home'] %>'>
+  <data key='eclipseLocation' value='<%= node['wasdev']['was']['home'] %>'/>
   <data key='user.import.profile' value='false'/>
+  <data key='cic.selector.ws' value='gtk'/>
   <data key='cic.selector.os' value='linux'/>
   <data key='cic.selector.arch' value='x86_64'/>
-  <data key='cic.selector.ws' value='gtk'/>
+  <data key='cic.selector.nl' value='<%= node['wasdev']['was']['languageCode'] %>'/>
 </profile>
-
-<profile id='IBM WebSphere Application Server V8.5' installLocation='<%= node['was']['was_home'] %>'>
-  <data key='eclipseLocation' value='<%= node['was']['was_home'] %>'/>
-  <data key='user.import.profile' value='false'/>
-  <data key='cic.selector.ws' value='gtk'/>
-  <data key='cic.selector.os' value='linux'/>
-  <data key='cic.selector.arch' value='x86'/>
-  <data key='cic.selector.nl' value='<%= node['was']['was_languageCode'] %>'/>
-</profile>
-
 <preference name='com.ibm.cic.common.core.preferences.eclipseCache' value='${sharedLocation}'/>
 <preference name='com.ibm.cic.common.core.preferences.preserveDownloadedArtifacts' value='true'/>
-
 <preference name='com.ibm.cic.common.core.preferences.connectTimeout' value='30'/>
 <preference name='com.ibm.cic.common.core.preferences.readTimeout' value='45'/>
 <preference name='com.ibm.cic.common.core.preferences.downloadAutoRetryCount' value='0'/>
@@ -43,7 +27,6 @@
 <preference name='com.ibm.cic.common.core.preferences.ssl.nonsecureMode' value='false'/>
 <preference name='com.ibm.cic.common.core.preferences.http.disablePreemptiveAuthentication' value='false'/>
 <preference name='http.ntlm.auth.kind' value='NTLM'/>
-<preference name='http.ntlm.auth.enableIntegrated.win32' value='true'/>
 <preference name='com.ibm.cic.common.core.preferences.keepFetchedFiles' value='false'/>
 <preference name='PassportAdvantageIsEnabled' value='false'/>
 <preference name='com.ibm.cic.common.core.preferences.searchForUpdates' value='false'/>
@@ -51,5 +34,4 @@
 <preference name='com.ibm.cic.common.sharedUI.showErrorLog' value='true'/>
 <preference name='com.ibm.cic.common.sharedUI.showWarningLog' value='true'/>
 <preference name='com.ibm.cic.common.sharedUI.showNoteLog' value='true'/>
-
 </agent-input>

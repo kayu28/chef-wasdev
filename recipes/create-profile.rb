@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: was
+# Cookbook Name:: wasdev
 # Recipe:: create-profile
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-wasHome = node['was']['was_home']
-profile = node['was']['profile']
-admin   = node['was']['admin']
+wasHome = node['wasdev']['was']['home']
+profile = node['wasdev']['was']['profile']
+admin   = node['wasdev']['was']['admin']
 username = admin['username']
 password = admin['password']
 service_name = 'default'
 
 remote_file "#{wasHome}/lib/ext/db2jcc.jar" do
-  source node['was']['provider']['db2driver_url']
+  source node['wasdev']['was']['provider']['db2driverUrl']
   owner 'root'
   group 'root'
   mode '0674'

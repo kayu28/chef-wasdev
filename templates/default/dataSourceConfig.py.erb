@@ -7,17 +7,17 @@ node = AdminControl.getNode()
 server = AdminControl.queryNames('node='+ node +',type=Server,*')
 serverName = AdminControl.getAttribute(server, "name")
 
-authDataAlias  = "<%= node['was']['auth']['alias'] %>"
-dbUser         = "<%= node['was']['auth']['dbuser'] %>"
-dbPassword     = "<%= node['was']['auth']['dbpassword'] %>"
+authDataAlias  = "<%= node['wasdev']['was']['auth']['alias'] %>"
+dbUser         = "<%= node['wasdev']['was']['auth']['dbuser'] %>"
+dbPassword     = "<%= node['wasdev']['was']['auth']['dbpassword'] %>"
 jdbcDriverPath = "<%= @jdbc_driver_path%>"
-jdbcProvider   = "<%= node['was']['provider']['name'] %>"
-dataSource     = "<%= node['was']['datasource']['name'] %>"
-jndiName       = "<%= node['was']['datasource']['jndi'] %>"
-database       = "<%= node['was']['datasource']['database'] %>"
-hostName       = "<%= node['was']['datasource']['hostname'] %>"
-port           = "<%= node['was']['datasource']['port'] %>"
-schema         = "<%= node['was']['datasource']['schema'] %>"
+jdbcProvider   = "<%= node['wasdev']['was']['provider']['name'] %>"
+dataSource     = "<%= node['wasdev']['was']['datasource']['name'] %>"
+jndiName       = "<%= node['wasdev']['was']['datasource']['jndi'] %>"
+database       = "<%= node['wasdev']['was']['datasource']['database'] %>"
+hostName       = "<%= node['wasdev']['was']['datasource']['hostname'] %>"
+port           = "<%= node['wasdev']['was']['datasource']['port'] %>"
+schema         = "<%= node['wasdev']['was']['datasource']['schema'] %>"
 
 def setup():
 	createAuthData(node, authDataAlias, dbUser, dbPassword)

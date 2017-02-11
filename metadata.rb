@@ -1,4 +1,4 @@
-name             'was'
+name             'wasdev'
 maintainer       'kayu28'
 license          'All rights reserved'
 description      'Installs/Configures was'

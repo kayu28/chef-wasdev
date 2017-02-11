@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: was
+# Cookbook Name:: wasdev
 # Recipe:: configure-datasource
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-wasHome = node['was']['was_home']
-p = node['was']['profile']
-a = node['was']['auth']
+wasHome = node['wasdev']['was']['home']
+p = node['wasdev']['was']['profile']
+a = node['wasdev']['was']['auth']
 script = "/tmp/dataSourceConfig.py"
 
 cmd_wsadmin = "#{wasHome}/profiles/#{p['profileName']}/bin/wsadmin.sh -conntype SOAP -lang jython"
